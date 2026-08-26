@@ -193,6 +193,7 @@ or:
 - [Deployment runbook](docs/deployment.md)
 - [Known limitations](docs/limitations.md)
 - [Engineering roadmap](docs/roadmap.md)
+- [GitHub and LinkedIn launch playbook](docs/launch-playbook.md)
 - [Contributing](CONTRIBUTING.md)
 
 ## Deployment
