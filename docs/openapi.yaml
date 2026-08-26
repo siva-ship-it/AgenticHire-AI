@@ -1,0 +1,440 @@
+openapi: 3.1.0
+info:
+  title: AgenticHire AI API
+  version: 1.0.0
+  description: Spec-driven recruitment, candidate, and workflow API.
+servers:
+  - url: http://localhost:5000
+    description: Local development
+tags:
+  - name: System
+  - name: Authentication
+  - name: Jobs
+  - name: Candidates
+  - name: Workflows
+  - name: Analytics
+paths:
+  /health:
+    get:
+      tags: [System]
+      summary: Check API liveness
+      responses:
+        '200':
+          description: API is running
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthResponse' }
+  /auth/signup:
+    post:
+      tags: [Authentication]
+      summary: Register a recruiter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SignupRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/AuthSuccess' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Authenticate a recruiter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/AuthSuccess' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get the current recruiter
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Current identity
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/User' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /jobs/public:
+    get:
+      tags: [Jobs]
+      summary: List active public jobs
+      responses:
+        '200':
+          description: Public jobs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties: { data: { type: array, items: { $ref: '#/components/schemas/Job' } } }
+  /jobs:
+    get:
+      tags: [Jobs]
+      summary: List the recruiter's jobs
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Owned jobs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties: { data: { type: array, items: { $ref: '#/components/schemas/Job' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Jobs]
+      summary: Create and publish a job
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JobInput' }
+      responses:
+        '201':
+          description: Job created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Job' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /jobs/{jobId}:
+    parameters:
+      - $ref: '#/components/parameters/JobId'
+    get:
+      tags: [Jobs]
+      summary: Get a public job
+      responses:
+        '200':
+          description: Job detail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Job' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Jobs]
+      summary: Replace an owned job
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JobInput' }
+      responses:
+        '200':
+          description: Job updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Job' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /candidates/upload:
+    post:
+      tags: [Candidates]
+      summary: Submit a public job application and start its workflow
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [name, email, jobId, resume]
+              properties:
+                name: { type: string, minLength: 2 }
+                email: { type: string, format: email }
+                phone: { type: string }
+                jobId: { $ref: '#/components/schemas/ObjectId' }
+                resume: { type: string, format: binary, description: PDF, maximum 5 MB }
+      responses:
+        '201':
+          description: Candidate and workflow created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          candidate: { $ref: '#/components/schemas/Candidate' }
+                          workflow: { $ref: '#/components/schemas/Workflow' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /candidates:
+    get:
+      tags: [Candidates]
+      summary: List candidates for owned jobs
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: jobId
+          schema: { $ref: '#/components/schemas/ObjectId' }
+      responses:
+        '200':
+          description: Candidate list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties: { data: { type: array, items: { $ref: '#/components/schemas/Candidate' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /candidates/{candidateId}:
+    get:
+      tags: [Candidates]
+      summary: Get an owned candidate and workflow
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/CandidateId'
+      responses:
+        '200':
+          description: Candidate detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SuccessEnvelope' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /workflow:
+    get:
+      tags: [Workflows]
+      summary: List workflows for owned jobs
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Workflow list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties: { data: { type: array, items: { $ref: '#/components/schemas/Workflow' } } }
+  /workflow/start:
+    post:
+      tags: [Workflows]
+      summary: Manually start an owned candidate workflow
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [candidateId]
+              properties: { candidateId: { $ref: '#/components/schemas/ObjectId' } }
+      responses:
+        '201': { description: Workflow started }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /workflow/retry:
+    post:
+      tags: [Workflows]
+      summary: Retry the failed node of an owned workflow
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WorkflowAction' }
+      responses:
+        '200': { description: Workflow retried }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /workflow/approve:
+    post:
+      tags: [Workflows]
+      summary: Resolve the human approval checkpoint
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/WorkflowAction'
+                - type: object
+                  required: [approved]
+                  properties: { approved: { type: boolean } }
+      responses:
+        '200': { description: Checkpoint resolved and workflow resumed }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /workflow/{workflowId}:
+    get:
+      tags: [Workflows]
+      summary: Get an owned workflow and execution logs
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkflowId'
+      responses:
+        '200': { description: Workflow detail and ordered logs }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /analytics:
+    get:
+      tags: [Analytics]
+      summary: Get recruiter-scoped pipeline and agent metrics
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Recruitment metrics
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Analytics' } }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    JobId: { in: path, name: jobId, required: true, schema: { $ref: '#/components/schemas/ObjectId' } }
+    CandidateId: { in: path, name: candidateId, required: true, schema: { $ref: '#/components/schemas/ObjectId' } }
+    WorkflowId: { in: path, name: workflowId, required: true, schema: { $ref: '#/components/schemas/ObjectId' } }
+  responses:
+    AuthSuccess:
+      description: Authentication succeeded
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/SuccessEnvelope'
+              - type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      token: { type: string }
+                      user: { $ref: '#/components/schemas/User' }
+    BadRequest: { description: Invalid request, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+    Unauthorized: { description: Authentication required, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+    NotFound: { description: Resource not found, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+    Conflict: { description: Resource conflict, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+  schemas:
+    ObjectId: { type: string, pattern: '^[a-fA-F0-9]{24}$', examples: ['507f1f77bcf86cd799439011'] }
+    SuccessEnvelope:
+      type: object
+      required: [success, data]
+      properties: { success: { type: boolean, const: true }, data: {} }
+    ErrorEnvelope:
+      type: object
+      required: [success, error]
+      properties:
+        success: { type: boolean, const: false }
+        error:
+          type: object
+          required: [code, message]
+          properties: { code: { type: string }, message: { type: string } }
+    HealthResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties: { data: { type: object, properties: { status: { type: string, const: ok } } } }
+    SignupRequest:
+      type: object
+      required: [name, email, password]
+      properties: { name: { type: string, minLength: 2 }, email: { type: string, format: email }, password: { type: string, minLength: 8, writeOnly: true } }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties: { email: { type: string, format: email }, password: { type: string, writeOnly: true } }
+    User:
+      type: object
+      properties: { id: { $ref: '#/components/schemas/ObjectId' }, name: { type: string }, email: { type: string, format: email }, role: { type: string, enum: [recruiter, admin] } }
+    JobInput:
+      type: object
+      required: [title, companyName, location, description]
+      properties:
+        title: { type: string, minLength: 2 }
+        companyName: { type: string, minLength: 2 }
+        location: { type: string, minLength: 2 }
+        employmentType: { type: string, enum: [FULL_TIME, PART_TIME, CONTRACTOR, TEMPORARY, INTERN, VOLUNTEER, OTHER], default: FULL_TIME }
+        description: { type: string, minLength: 10 }
+        requiredSkills: { type: array, items: { type: string }, default: [] }
+        preferredSkills: { type: array, items: { type: string }, default: [] }
+        minExperience: { type: number, minimum: 0, default: 0 }
+        hiringSpecId: { type: string, default: hiring/frontend-developer.json }
+        workflowSpecId: { type: string, default: workflow/default-hiring-workflow.json }
+    Job:
+      allOf:
+        - $ref: '#/components/schemas/JobInput'
+        - type: object
+          properties:
+            _id: { $ref: '#/components/schemas/ObjectId' }
+            createdBy: { $ref: '#/components/schemas/ObjectId' }
+            isActive: { type: boolean }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+    Candidate:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/ObjectId' }
+        jobId: { $ref: '#/components/schemas/ObjectId' }
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        matchScore: { type: number }
+        status: { type: string }
+        parsedResumeJson: { type: object, additionalProperties: true }
+        createdAt: { type: string, format: date-time }
+    WorkflowStep:
+      type: object
+      properties:
+        name: { type: string }
+        status: { type: string, enum: [pending, running, success, failed, waiting_approval, skipped] }
+        retries: { type: integer }
+        error: { type: string }
+        startedAt: { type: string, format: date-time }
+        completedAt: { type: string, format: date-time }
+    Workflow:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/ObjectId' }
+        candidateId: { $ref: '#/components/schemas/ObjectId' }
+        jobId: { $ref: '#/components/schemas/ObjectId' }
+        currentState: { type: string }
+        status: { type: string, enum: [running, waiting_approval, completed, failed] }
+        steps: { type: array, items: { $ref: '#/components/schemas/WorkflowStep' } }
+        createdAt: { type: string, format: date-time }
+    WorkflowAction:
+      type: object
+      required: [workflowId]
+      properties: { workflowId: { $ref: '#/components/schemas/ObjectId' } }
+    Analytics:
+      type: object
+      properties:
+        totalCandidates: { type: integer }
+        shortlistRate: { type: number, minimum: 0, maximum: 1 }
+        workflowCompletionRate: { type: number, minimum: 0, maximum: 1 }
+        agentMetrics:
+          type: array
+          items:
+            type: object
+            properties: { _id: { type: string }, runs: { type: integer }, failures: { type: integer } }
