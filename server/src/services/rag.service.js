@@ -2,7 +2,7 @@ import { QdrantClient } from '@qdrant/js-client-rest';
 import { env } from '../config/env.js';
 import { loadSpec } from '../utils/spec-loader.js';
 
-const client = new QdrantClient({ url: env.QDRANT_URL, checkCompatibility: false });
+const client = new QdrantClient({ url: env.QDRANT_URL, apiKey: env.QDRANT_API_KEY, checkCompatibility: false });
 export function chunkText(text, size) { return text.match(new RegExp(`[\\s\\S]{1,${size}}`, 'g')) || []; }
 
 // A deterministic local embedding keeps development usable without paid APIs.

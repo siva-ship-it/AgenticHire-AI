@@ -1,3 +1,5 @@
 import request from 'supertest'; import { app } from '../src/app.js';
 test('health endpoint returns structured JSON', async () => { const response = await request(app).get('/health').expect(200); expect(response.body).toEqual({ success: true, data: { status: 'ok' } }); });
 test('unknown endpoints return structured errors', async () => { const response = await request(app).get('/missing').expect(404); expect(response.body.success).toBe(false); });
+test('rejects requests from an untrusted browser origin', async () => { const response = await request(app).get('/health').set('Origin', 'https://malicious.example').expect(403); expect(response.body.error.code).toBe('CORS_DENIED'); });
+test('rejects non-PDF resume uploads as a client error', async () => { const response = await request(app).post('/candidates/upload').field('name', 'Candidate').field('email', 'candidate@example.com').field('jobId', '507f1f77bcf86cd799439011').attach('resume', Buffer.from('not a pdf'), { filename: 'resume.txt', contentType: 'text/plain' }).expect(400); expect(response.body.error.message).toBe('Only PDF files are allowed'); });
