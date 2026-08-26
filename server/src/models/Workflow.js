@@ -1,0 +1,3 @@
+import mongoose from 'mongoose';
+const schema = new mongoose.Schema({ candidateId: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidate', required: true, index: true }, jobId: { type: mongoose.Schema.Types.ObjectId, ref: 'Job', required: true }, steps: [{ name: String, status: { type: String, default: 'pending' }, retries: { type: Number, default: 0 }, startedAt: Date, completedAt: Date, error: String }], currentState: String, status: { type: String, enum: ['running', 'waiting_approval', 'completed', 'failed'], default: 'running' }, context: mongoose.Schema.Types.Mixed }, { timestamps: true });
+export const Workflow = mongoose.model('Workflow', schema);

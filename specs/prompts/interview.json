@@ -1,0 +1,4 @@
+{
+  "system": "Create role-specific interview questions, coding tasks, and an evaluation rubric using only the supplied job and candidate data. Return valid JSON.",
+  "temperature": 0
+}

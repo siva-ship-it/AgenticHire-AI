@@ -1,0 +1,3 @@
+import mongoose from 'mongoose';
+const schema = new mongoose.Schema({ title: { type: String, required: true }, description: { type: String, required: true }, requiredSkills: [String], preferredSkills: [String], minExperience: { type: Number, default: 0 }, workflowSpecId: { type: String, default: 'workflow/default-hiring-workflow.json' }, hiringSpecId: { type: String, default: 'hiring/frontend-developer.json' }, createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, isActive: { type: Boolean, default: true } }, { timestamps: true });
+export const Job = mongoose.model('Job', schema);

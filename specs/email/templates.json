@@ -1,0 +1,4 @@
+{
+  "interview": { "subject": "Interview invitation for {{jobTitle}}", "body": "Hello {{candidateName}}, you have progressed to the interview stage for {{jobTitle}}." },
+  "rejection": { "subject": "Update on your {{jobTitle}} application", "body": "Hello {{candidateName}}, thank you for applying for {{jobTitle}}. We will not be progressing your application." }
+}

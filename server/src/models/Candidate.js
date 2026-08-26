@@ -1,0 +1,3 @@
+import mongoose from 'mongoose';
+const schema = new mongoose.Schema({ jobId: { type: mongoose.Schema.Types.ObjectId, ref: 'Job', required: true, index: true }, name: { type: String, required: true }, email: { type: String, required: true, lowercase: true }, phone: String, resumeUrl: { type: String, required: true }, parsedResumeJson: mongoose.Schema.Types.Mixed, matchScore: Number, status: { type: String, enum: ['submitted', 'processing', 'waiting_approval', 'shortlisted', 'hold', 'rejected', 'approved', 'completed', 'failed'], default: 'submitted' } }, { timestamps: true });
+export const Candidate = mongoose.model('Candidate', schema);

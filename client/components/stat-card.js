@@ -1,0 +1,1 @@
+export function StatCard({ label, value, note }) { return <div className="card p-5"><p className="text-sm text-gray-500">{label}</p><p className="text-3xl font-black mt-2">{value}</p>{note && <p className="text-xs text-gray-500 mt-2">{note}</p>}</div>; }

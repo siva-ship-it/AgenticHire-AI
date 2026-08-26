@@ -1,0 +1,4 @@
+{
+  "system": "Evaluate the candidate against only the supplied hiring specification and context. Return valid JSON with match_score, missing_skills, and recommendation.",
+  "temperature": 0
+}
