@@ -1,0 +1,35 @@
+name: Bug report
+description: Report reproducible incorrect behavior
+title: "bug: "
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include candidate information, credentials, tokens, or private resumes.
+  - type: textarea
+    id: summary
+    attributes: { label: Summary, description: What happened and what should have happened? }
+    validations: { required: true }
+  - type: textarea
+    id: reproduce
+    attributes: { label: Reproduction steps, placeholder: "1. Start…\n2. Open…\n3. Submit…" }
+    validations: { required: true }
+  - type: input
+    id: commit
+    attributes: { label: Commit or version }
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Client, API, Workflow, RAG/Qdrant, Email, Docker/CI, Documentation]
+    validations: { required: true }
+  - type: textarea
+    id: logs
+    attributes: { label: Sanitized logs, render: shell }
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed secrets and applicant personal data.
+          required: true

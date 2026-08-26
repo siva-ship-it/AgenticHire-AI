@@ -7,17 +7,19 @@ servers:
   - url: http://localhost:5000
     description: Local development
 tags:
-  - name: System
-  - name: Authentication
-  - name: Jobs
-  - name: Candidates
-  - name: Workflows
-  - name: Analytics
+  - { name: System, description: Service health and operational endpoints }
+  - { name: Authentication, description: Recruiter identity and access tokens }
+  - { name: Jobs, description: Public discovery and recruiter-owned job management }
+  - { name: Candidates, description: Public applications and recruiter candidate records }
+  - { name: Workflows, description: 'Persisted execution, approval, retry, and logs' }
+  - { name: Analytics, description: Recruiter-scoped pipeline metrics }
 paths:
   /health:
     get:
       tags: [System]
       summary: Check API liveness
+      operationId: getHealth
+      security: []
       responses:
         '200':
           description: API is running
@@ -28,6 +30,8 @@ paths:
     post:
       tags: [Authentication]
       summary: Register a recruiter
+      operationId: signupRecruiter
+      security: []
       requestBody:
         required: true
         content:
@@ -41,6 +45,8 @@ paths:
     post:
       tags: [Authentication]
       summary: Authenticate a recruiter
+      operationId: loginRecruiter
+      security: []
       requestBody:
         required: true
         content:
@@ -53,6 +59,7 @@ paths:
     get:
       tags: [Authentication]
       summary: Get the current recruiter
+      operationId: getCurrentRecruiter
       security: [{ bearerAuth: [] }]
       responses:
         '200':
@@ -69,6 +76,8 @@ paths:
     get:
       tags: [Jobs]
       summary: List active public jobs
+      operationId: listPublicJobs
+      security: []
       responses:
         '200':
           description: Public jobs
@@ -83,6 +92,7 @@ paths:
     get:
       tags: [Jobs]
       summary: List the recruiter's jobs
+      operationId: listRecruiterJobs
       security: [{ bearerAuth: [] }]
       responses:
         '200':
@@ -98,6 +108,7 @@ paths:
     post:
       tags: [Jobs]
       summary: Create and publish a job
+      operationId: createJob
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -122,6 +133,8 @@ paths:
     get:
       tags: [Jobs]
       summary: Get a public job
+      operationId: getPublicJob
+      security: []
       responses:
         '200':
           description: Job detail
@@ -136,6 +149,7 @@ paths:
     put:
       tags: [Jobs]
       summary: Replace an owned job
+      operationId: updateJob
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -157,6 +171,8 @@ paths:
     post:
       tags: [Candidates]
       summary: Submit a public job application and start its workflow
+      operationId: submitApplication
+      security: []
       requestBody:
         required: true
         content:
@@ -169,7 +185,7 @@ paths:
                 email: { type: string, format: email }
                 phone: { type: string }
                 jobId: { $ref: '#/components/schemas/ObjectId' }
-                resume: { type: string, format: binary, description: PDF, maximum 5 MB }
+                resume: { type: string, format: binary, description: 'PDF, maximum 5 MB' }
       responses:
         '201':
           description: Candidate and workflow created
@@ -191,6 +207,7 @@ paths:
     get:
       tags: [Candidates]
       summary: List candidates for owned jobs
+      operationId: listCandidates
       security: [{ bearerAuth: [] }]
       parameters:
         - in: query
@@ -211,6 +228,7 @@ paths:
     get:
       tags: [Candidates]
       summary: Get an owned candidate and workflow
+      operationId: getCandidate
       security: [{ bearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/CandidateId'
@@ -225,6 +243,7 @@ paths:
     get:
       tags: [Workflows]
       summary: List workflows for owned jobs
+      operationId: listWorkflows
       security: [{ bearerAuth: [] }]
       responses:
         '200':
@@ -240,6 +259,7 @@ paths:
     post:
       tags: [Workflows]
       summary: Manually start an owned candidate workflow
+      operationId: startWorkflow
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -256,6 +276,7 @@ paths:
     post:
       tags: [Workflows]
       summary: Retry the failed node of an owned workflow
+      operationId: retryWorkflow
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -269,6 +290,7 @@ paths:
     post:
       tags: [Workflows]
       summary: Resolve the human approval checkpoint
+      operationId: approveWorkflow
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -287,6 +309,7 @@ paths:
     get:
       tags: [Workflows]
       summary: Get an owned workflow and execution logs
+      operationId: getWorkflow
       security: [{ bearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/WorkflowId'
@@ -297,6 +320,7 @@ paths:
     get:
       tags: [Analytics]
       summary: Get recruiter-scoped pipeline and agent metrics
+      operationId: getAnalytics
       security: [{ bearerAuth: [] }]
       responses:
         '200':

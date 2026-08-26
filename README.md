@@ -192,6 +192,7 @@ or:
 - [Security model](docs/security.md)
 - [Deployment runbook](docs/deployment.md)
 - [Known limitations](docs/limitations.md)
+- [Engineering roadmap](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md)
 
 ## Deployment

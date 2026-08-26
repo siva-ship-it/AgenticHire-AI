@@ -5,9 +5,16 @@
     "dev": "concurrently -n client,server -c cyan,green \"npm run dev --prefix client\" \"npm run dev --prefix server\"",
     "install:all": "npm install --prefix client && npm install --prefix server",
     "test": "npm test --prefix server && npm test --prefix client",
-    "build": "npm run build --prefix client"
+    "build": "npm run build --prefix client",
+    "lint:openapi": "redocly lint docs/openapi.yaml",
+    "lint:yaml": "node scripts/validate-yaml.mjs",
+    "verify": "npm run lint:yaml && npm run lint:openapi && npm test && npm run build",
+    "audit:production": "npm audit --omit=dev --prefix client && npm audit --omit=dev --prefix server",
+    "docker:config": "docker compose config && docker compose -f docker-compose.production.yml config"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "@redocly/cli": "^2.48.0",
+    "concurrently": "^9.1.2",
+    "yaml": "^2.9.0"
   }
 }

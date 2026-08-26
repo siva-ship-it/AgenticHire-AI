@@ -1,0 +1,57 @@
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      CLIENT_URL: http://localhost:3000
+      MONGODB_URI: mongodb://mongodb:27017/agentichire
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET before starting the production stack}
+      QDRANT_URL: http://qdrant:6333
+      UPLOAD_DIR: /app/server/uploads
+    volumes:
+      - resume_data:/app/server/uploads
+    ports:
+      - "5000:5000"
+
+  client:
+    build:
+      context: client
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:5000
+        NEXT_PUBLIC_APP_URL: http://localhost:3000
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "3000:3000"
+
+volumes:
+  mongodb_data:
+  qdrant_data:
+  resume_data:

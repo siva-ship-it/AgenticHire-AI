@@ -1,0 +1,13 @@
+.git
+.github
+node_modules
+**/node_modules
+**/.next
+**/coverage
+**/.env
+**/.env.local
+server/uploads/*
+server/logs/*
+playwright-report
+test-results
+npm-debug.log*

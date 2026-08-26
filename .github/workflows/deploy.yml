@@ -1,0 +1,52 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  deploy-api:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Trigger Render deployment when configured
+        if: env.RENDER_DEPLOY_HOOK_URL != ''
+        run: curl --fail --silent --show-error --request POST "${RENDER_DEPLOY_HOOK_URL}&ref=${{ github.event.workflow_run.head_sha }}"
+
+  deploy-client:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Install Vercel CLI
+        if: env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
+        run: npm install --global vercel@latest
+      - name: Pull production environment
+        if: env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Build production artifacts
+        if: env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Deploy production artifacts
+        if: env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
