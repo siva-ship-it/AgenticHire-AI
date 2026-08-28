@@ -136,6 +136,24 @@ See [Security](security.md) for the threat model and operational requirements.
 
 ## Deployment topology
 
+### Live managed topology
+
+```mermaid
+flowchart LR
+    Candidate[Candidate browser] --> Site[AgenticHire Sites application]
+    Recruiter[Recruiter with ChatGPT auth] --> Site
+    Site --> D1[(Cloudflare D1)]
+    Site --> R2[(Private Cloudflare R2)]
+    Site --> Score[Deterministic skill matching]
+    Score --> Approval{Human approval}
+    GitHub[GitHub source] --> CI[GitHub Actions]
+    CI --> Site
+```
+
+The managed edition in `production-site/` is the active hosted application. It combines public careers pages and recruiter routes in one deployable unit. D1 stores jobs, candidates, and workflow logs; R2 stores PDF resumes privately; recruiter access uses ChatGPT authentication. Tenant-scoped queries and the human approval checkpoint remain enforced in application code.
+
+### Reference service topology
+
 ```mermaid
 flowchart LR
     Internet((Internet)) --> Vercel[Vercel: client]

@@ -1,5 +1,9 @@
 # AgenticHire AI
 
+![AgenticHire social preview](artifacts/agentichire-social-preview.png)
+
+**Live application:** [agentichire-ai.sampath6068.chatgpt.site](https://agentichire-ai.sampath6068.chatgpt.site) *(owner-only until public launch approval)*
+
 AgenticHire AI is a spec-driven recruitment operations platform. Recruiters publish roles, candidates apply through public career pages, and a persisted LangGraph workflow parses resumes, stores searchable context, evaluates fit, pauses for human approval, and completes interview/email actions.
 
 The project is an applicant-tracking and workflow-orchestration system—not a chatbot. Hiring thresholds, scoring weights, workflow steps, retry behavior, prompts, RAG parameters, and email copy are runtime specifications under [`specs/`](specs/).
@@ -61,6 +65,7 @@ See [Architecture](docs/architecture.md) for component, execution, and deploymen
 
 ```text
 Agentichire-AI/
+├── production-site/        Managed live edition (D1, R2, ChatGPT auth)
 ├── client/                 Next.js application
 ├── server/                 Express API, agents, workflows, models, tests
 ├── specs/                  Runtime business and orchestration rules
@@ -198,7 +203,9 @@ or:
 
 ## Deployment
 
-The recommended hosted topology is Vercel (`client/`), Render (`server/`), MongoDB Atlas, Qdrant Cloud, and Resend. Follow the [deployment runbook](docs/deployment.md). Local filesystem uploads must use a persistent disk or be replaced with private object storage before processing real applicant data.
+The live managed edition is in [`production-site/`](production-site/) and uses Sites, D1, private R2 storage, and ChatGPT authentication. Its current production address is [agentichire-ai.sampath6068.chatgpt.site](https://agentichire-ai.sampath6068.chatgpt.site). Follow the [managed production runbook](docs/managed-production.md).
+
+The reference architecture remains deployable with Vercel (`client/`), Render (`server/`), MongoDB Atlas, Qdrant Cloud, and Resend. Follow the [deployment runbook](docs/deployment.md) for that topology.
 
 ## Project status
 
