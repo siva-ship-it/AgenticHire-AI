@@ -2,7 +2,7 @@
 
 ![AgenticHire social preview](artifacts/agentichire-social-preview.png)
 
-**Live application:** [agentichire-ai.sampath6068.chatgpt.site](https://agentichire-ai.sampath6068.chatgpt.site) *(owner-only until public launch approval)*
+**Live application:** [agentichire-ai.sampath6068.chatgpt.site](https://agentichire-ai.sampath6068.chatgpt.site) *(public careers pages; ChatGPT sign-in for recruiter routes)*
 
 AgenticHire AI is a spec-driven recruitment operations platform. Recruiters publish roles, candidates apply through public career pages, and a persisted LangGraph workflow parses resumes, stores searchable context, evaluates fit, pauses for human approval, and completes interview/email actions.
 

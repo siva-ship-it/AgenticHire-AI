@@ -9,7 +9,7 @@
 - Files: private Cloudflare R2 bucket
 - Recruiter identity: ChatGPT authentication
 
-The site is initially owner-only. Change the Sites access policy to public only when the owner is ready for candidates to use the application.
+The site is public so candidates can browse published roles and apply. Recruiter routes remain protected by ChatGPT sign-in and tenant-scoped server-side authorization.
 
 ## Candidate journey
 
